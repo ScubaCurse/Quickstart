@@ -14,11 +14,12 @@ public class Constants {
         // return new Follower(Drivetrain, Localizer, Foresight);
         return null;
     }
+    // Please update MecanumConfig and Pinpoint
     public static MecanumConfig drivetrainConfig = new MecanumConfig(c -> {
-        c.frontLeftName.set("RL");
+        c.frontLeftName.set("FL");
         c.frontRightName.set("FR");
-        c.backLeftName.set("RR");
-        c.backRightName.set("FL");
+        c.backLeftName.set("RL");
+        c.backRightName.set("RR");
         c.frontLeftDirection.set(DcMotorSimple.Direction.FORWARD);
         c.frontRightDirection.set(DcMotorSimple.Direction.REVERSE);
         c.backLeftDirection.set(DcMotorSimple.Direction.FORWARD);

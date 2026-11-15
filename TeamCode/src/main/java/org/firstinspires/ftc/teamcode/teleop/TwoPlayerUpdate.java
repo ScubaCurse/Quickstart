@@ -3,13 +3,13 @@ package org.firstinspires.ftc.teamcode.teleop;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.teamcode.commands.ShootCalc;
 import org.firstinspires.ftc.teamcode.subsystems.Flywheel;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Drivetrain;
 import org.firstinspires.ftc.teamcode.commands.Shoot;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
 import org.firstinspires.ftc.teamcode.utilities.RobotPosition;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.pedropathing.follower.Follower;
@@ -26,15 +26,20 @@ public class TwoPlayerUpdate extends LinearOpMode {
     private PinpointLocalizer localizer;
     private double speedMode;
     private int targetVelocity;
-
-    // Button debounce variables
-    private boolean dpadUpPressed = false;
-    private boolean dpadDownPressed = false;
+    private double hiveX;
+    private double hiveY;
+    private int hiveSelected;
+    private double distance;
 
     @Override
     public void runOpMode() {
 
         targetVelocity = 1725;
+
+        // Hive 2 selected by default
+        hiveX = 57.5;
+        hiveY = 96.9;
+        hiveSelected = 2;
 
         // Initialize subsystems
         drivetrain = new Drivetrain(hardwareMap);
@@ -52,10 +57,51 @@ public class TwoPlayerUpdate extends LinearOpMode {
 
         telemetry.addData("Status", "Initialized");
         telemetry.update();
+        // Load saved autonomous position
+        RobotPosition position = new RobotPosition();
+        JSONObject saved = position.load(hardwareMap);
 
+        // Initialize Pinpoint
+        localizer = new PinpointLocalizer(
+                hardwareMap,
+                Constants.localizerConfig
+        );
+
+        // Restore field position
+        if (saved != null) {
+            double x = saved.optDouble("stoppedX", Double.NaN);
+            double y = saved.optDouble("stoppedY", Double.NaN);
+            double heading = saved.optDouble("stoppedHeading", Double.NaN);
+
+            if (!Double.isNaN(x) &&
+                    !Double.isNaN(y) &&
+                    !Double.isNaN(heading)) {
+
+                localizer.setPose(new Pose(x, y, heading));
+            }
+        }
         waitForStart();
 
         while (opModeIsActive()) {
+
+            localizer.update();
+
+            Pose currentPose = localizer.pose();
+
+            double robotX = currentPose.x();
+            double robotY = currentPose.y();
+            double robotHeading = currentPose.heading();
+            // Change hive selected
+            if (gamepad2.xWasPressed()) {
+                hiveSelected = 1;
+                hiveX = 57.5;
+                hiveY = 43.0;
+            } else if (gamepad2.yWasPressed()) {
+                hiveSelected = 2;
+                hiveX = 57.5;
+                hiveY = 96.9;
+            }
+            distance = Math.sqrt(((hiveY - robotY) * (hiveY - robotY)) + ((hiveX - robotX) * (hiveX - robotX)));
 
             // DRIVETRAIN CONTROL
 
@@ -89,20 +135,12 @@ public class TwoPlayerUpdate extends LinearOpMode {
 
             }
 
-            // SHOOTER VELOCITY ADJUSTMENT WITH DEBOUNCE
-            if (gamepad2.dpad_up && !dpadUpPressed) {
+            // SHOOTER VELOCITY ADJUSTMENT
+            if (gamepad2.dpadUpWasPressed()) {
                 targetVelocity += 25;
-                dpadUpPressed = true;
             }
-            if (!gamepad2.dpad_up) {
-                dpadUpPressed = false;
-            }
-            if (gamepad2.dpad_down && !dpadDownPressed) {
+            if (gamepad2.dpadDownWasPressed()) {
                 targetVelocity -= 25;
-                dpadDownPressed = true;
-            }
-            if (!gamepad2.dpad_down) {
-                dpadDownPressed = false;
             }
             // rumble controller when shooter velocity is within 25 of the target.
             if (Math.abs(flywheel.getAverageVelocity() - targetVelocity) <= 50) {
@@ -120,28 +158,24 @@ public class TwoPlayerUpdate extends LinearOpMode {
 
             if (savedPosition != null) {
 
-                double stoppedX = 0;
-                try {
-                    stoppedX = savedPosition.getDouble("stoppedX");
-                } catch (JSONException e) {
-                    throw new RuntimeException(e);
+                double stoppedX = savedPosition.optDouble("stoppedX", Double.NaN);
+                double stoppedY = savedPosition.optDouble("stoppedY", Double.NaN);
+                double stoppedHeading = savedPosition.optDouble("stoppedHeading", Double.NaN);
+
+                if (!Double.isNaN(stoppedX) &&
+                        !Double.isNaN(stoppedY) &&
+                        !Double.isNaN(stoppedHeading)) {
+
+                    telemetry.addData("Saved X", stoppedX);
+                    telemetry.addData("Saved Y", stoppedY);
+                    telemetry.addData("Saved Heading", stoppedHeading);
+                    telemetry.addData("Robot X", robotX);
+                    telemetry.addData("Robot Y", robotY);
+                    telemetry.addData("Robot Heading", robotHeading);
+
+                } else {
+                    telemetry.addData("Error", "Invalid or missing coordinates in JSON");
                 }
-                double stoppedY = 0;
-                try {
-                    stoppedY = savedPosition.getDouble("stoppedY");
-                } catch (JSONException e) {
-                    throw new RuntimeException(e);
-                }
-                double stoppedHeading = 0;
-                try {
-                    stoppedHeading = savedPosition.getDouble("stoppedHeading");
-                } catch (JSONException e) {
-                    throw new RuntimeException(e);
-                }
-                telemetry.addData("Robot stopped in auto", "");
-                telemetry.addData("Saved X", stoppedX);
-                telemetry.addData("Saved Y", stoppedY);
-                telemetry.addData("Saved Heading", stoppedHeading);
 
             } else {
                 telemetry.addData("Error", "Could not load robot position");

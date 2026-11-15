@@ -1,9 +1,56 @@
 package org.firstinspires.ftc.teamcode.commands;
-import org.firstinspires.ftc.teamcode.subsystems.Intake;
+
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+
 import org.firstinspires.ftc.teamcode.subsystems.Flywheel;
+import org.firstinspires.ftc.teamcode.subsystems.Intake;
 
 public class Shoot {
-    public void shoot(int rpm) {
-        System.out.println("Shot pollen at " + rpm);
+
+    private Flywheel flywheel;
+    private Intake intake;
+
+    public Shoot(Flywheel flywheel, Intake intake) {
+        this.flywheel = flywheel;
+        this.intake = intake;
+    }
+
+    public void shoot(double velocity) {
+        flywheel.setVelocity(velocity);
+        intake.stop();
+    }
+
+    public void shootWithIntake(double velocity) {
+        flywheel.setVelocity(velocity);
+        intake.intake();
+    }
+
+    public void reverseShooter() {
+        flywheel.reverse();
+        intake.setPower(1);
+    }
+
+    public void reverseIntake() {
+        flywheel.stop();
+        intake.reverse();
+    }
+
+    public void stop() {
+        flywheel.stop();
+        intake.stop();
+    }
+    public void shootForTime(double targetVelocity, double seconds,
+                             LinearOpMode opMode) {
+
+        flywheel.setVelocity(targetVelocity);
+
+        // Wait for shooter to spin up
+        // opMode.sleep(1000);
+        if (Math.abs(flywheel.getAverageVelocity() - targetVelocity) <= 50) {
+            // Feed POLLEN
+            intake.setPower(0.35);
+            opMode.sleep((long)(seconds * 1000));
+            stop();
+        }
     }
 }

@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.pedro;
 import static org.firstinspires.ftc.teamcode.pedro.Constants.drivetrainConfig;
+import static org.firstinspires.ftc.teamcode.pedro.Constants.foresightConfig;
 import static org.firstinspires.ftc.teamcode.pedro.Constants.localizerConfig;
 
 import com.pedropathing.algorithm.Foresight;
@@ -14,6 +15,7 @@ import org.firstinspires.ftc.teamcode.pedro.procedures.ForesightTuner;
 import org.firstinspires.ftc.teamcode.pedro.procedures.MecanumTuner;
 import org.firstinspires.ftc.teamcode.pedro.procedures.PinpointTuner;
 import org.firstinspires.ftc.teamcode.pedro.procedures.Tests;
+import org.firstinspires.ftc.teamcode.pedro.procedures.TwoWheelTuner;
 
 public class Tuning {
     // Tuners go here
@@ -24,7 +26,7 @@ public class Tuning {
 
     @Tuner
     public static Procedure tests() {
-        return new Tests(hardwareMap -> new Mecanum(hardwareMap, drivetrainConfig), null, null);
+        return new Tests(hardwareMap -> new Mecanum(hardwareMap, Constants.drivetrainConfig), (hardwareMap -> new PinpointLocalizer(hardwareMap, Constants.localizerConfig)), () -> new Foresight(Constants.foresightConfig));
     }
 
     @Tuner
@@ -32,19 +34,9 @@ public class Tuning {
         return new PinpointTuner();
     }
 
-    // I finished pinpointTuner, we need to configure foresight later
     @Tuner
     public static Procedure foresightTuner() {
         return new ForesightTuner((hardwareMap) -> new PinpointLocalizer(hardwareMap, localizerConfig), (hardwareMap) -> new Mecanum(hardwareMap, drivetrainConfig));
     }
-    // Also do follower
-    /*
-    public static Follower create(HardwareMap h) {
-    return new Follower(
-        new PinpointLocalizer(h, localizerConfig),
-        new Mecanum(h, drivetrainConfig),
-        new Foresight(foresightConfig)
-    );
-    }
-     */
+
 }

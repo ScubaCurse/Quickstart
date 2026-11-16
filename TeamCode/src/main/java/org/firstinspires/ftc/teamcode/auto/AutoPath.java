@@ -1,3 +1,4 @@
+
 package org.firstinspires.ftc.teamcode.auto;
 
 import com.pedropathing.api.Paths;
@@ -28,15 +29,26 @@ public class AutoPath extends LinearOpMode {
 
     private final PoseFactory poseFactory = PoseFactory.degrees();
 
-    private final Pose start = poseFactory.of(56, 8, 90);
-    private final Pose path1 = poseFactory.of(13.3675, 102.354, 180);
-    private final Pose path1Control1 = poseFactory.of(3.4522, 27.8263, 0);
+    private final Pose start = poseFactory.of(
+            61.1424, 8.6635, -90
+    );
+
+    private final Pose path1 = poseFactory.of(
+            9.5522, 110.4824, 180
+    );
+
+    private final Pose path1Control1 = poseFactory.of(
+            16.5571, 19.5321, 0
+    );
 
     private Flywheel flywheel;
     private Intake intake;
     private Shoot shoot;
 
-    private RobotPosition robotPosition;
+    private Pose lastPose;
+
+    // Save every 100 milliseconds
+    private static final long SAVE_INTERVAL = 100;
 
     public Command autoRoutine() {
         return sequential(
@@ -47,176 +59,144 @@ public class AutoPath extends LinearOpMode {
     @Override
     public void runOpMode() {
 
-        // Initialize subsystems
-        flywheel = new Flywheel(hardwareMap);
-        intake = new Intake(hardwareMap);
-        shoot = new Shoot(flywheel, intake);
-
-        robotPosition = new RobotPosition();
-
-        // Initialize Pedro
-        Scheduler.reset();
-
-        follower = Constants.create(hardwareMap);
-        follower.setPose(start);
-        follower.update();
-
-        telemetry.addData("Status", "Initialized");
-        telemetry.update();
-
-        waitForStart();
-
-        if (isStopRequested()) {
-            return;
-        }
-
         try {
 
-            // Shoot preloaded POLLEN
-            shoot.shootForTime(1725, 2.0, this);
+            // Initialize subsystems
+            flywheel = new Flywheel(hardwareMap);
+            intake = new Intake(hardwareMap);
+            shoot = new Shoot(flywheel, intake);
+
+            Scheduler.reset();
+
+            // Initialize Pedro
+            follower = Constants.create(hardwareMap);
+
+            follower.setPose(start);
+            follower.update();
+
+            lastPose = follower.pose();
+
+            // Save starting position
+            savePosition();
+
+            telemetry.addData("Status", "Initialized");
+            telemetry.addData("Starting X", lastPose.x());
+            telemetry.addData("Starting Y", lastPose.y());
+            telemetry.addData("Starting Heading", lastPose.heading());
+            telemetry.update();
+
+            waitForStart();
+
+            if (isStopRequested()) {
+                return;
+            }
 
             if (opModeIsActive()) {
 
-                // Start autonomous paths
-                schedule(autoRoutine());
+                // Shoot preloaded pollen
+                shoot.shootForTime(1700, 2.0, this);
 
-                while (opModeIsActive()) {
+                if (opModeIsActive()) {
 
-                    follower.update();
-                    Scheduler.execute();
+                    schedule(autoRoutine());
 
-                    // Save the latest robot position
-                    Pose currentPose = follower.pose();
+                    long lastSaveTime = 0;
 
-                    telemetry.addData("x", currentPose.x());
-                    telemetry.addData("y", currentPose.y());
-                    telemetry.addData("heading", currentPose.heading());
+                    // MAIN AUTONOMOUS LOOP
+                    while (opModeIsActive()) {
 
-                    if (follower.currentPath() != null) {
+                        // Update Pedro localization
+                        follower.update();
+
+                        // Get latest position
+                        lastPose = follower.pose();
+
+                        // Save position every 100 ms
+                        long currentTime = System.currentTimeMillis();
+
+                        if (currentTime - lastSaveTime >= SAVE_INTERVAL) {
+
+                            savePosition();
+
+                            lastSaveTime = currentTime;
+                        }
+
+                        // Execute scheduled commands
+                        Scheduler.execute();
+
+                        // Telemetry
+                        telemetry.addData("LIVE X", lastPose.x());
+                        telemetry.addData("LIVE Y", lastPose.y());
+                        telemetry.addData("LIVE Heading", lastPose.heading());
+
                         telemetry.addData(
-                                "Current path distance remaining",
-                                follower.distanceToEndpoint()
+                                "Last Save",
+                                currentTime - lastSaveTime + SAVE_INTERVAL + " ms"
                         );
 
-                        telemetry.addData(
-                                "Path number",
-                                follower.pathIndex()
-                        );
+                        if (follower.currentPath() != null) {
+
+                            telemetry.addData(
+                                    "Distance Remaining",
+                                    follower.distanceToEndpoint()
+                            );
+
+                            telemetry.addData(
+                                    "Path Number",
+                                    follower.pathIndex()
+                            );
+                        }
+
+                        telemetry.update();
                     }
-
-                    telemetry.update();
                 }
             }
 
         } finally {
 
-            // Save the last known position when autonomous ends
-            if (follower != null) {
-
-                Pose finalPose = follower.pose();
-
-                robotPosition.save(
-                        hardwareMap,
-                        finalPose.x(),
-                        finalPose.y(),
-                        finalPose.heading()
-                );
-            }
+            // Do NOT save position here.
+            // The last successful periodic save remains in JSON.
 
             // Stop mechanisms
-            shoot.stop();
+            if (shoot != null) {
+                shoot.stop();
+            }
         }
     }
 
+    private void savePosition() {
+
+        if (lastPose == null) {
+            return;
+        }
+
+        double x = lastPose.x();
+        double y = lastPose.y();
+        double heading = lastPose.heading();
+
+        if (!Double.isFinite(x) ||
+                !Double.isFinite(y) ||
+                !Double.isFinite(heading)) {
+
+            android.util.Log.e(
+                    "AutoPath",
+                    "Invalid pose. Skipping save."
+            );
+
+            return;
+        }
+
+        RobotPosition.save(
+                hardwareMap,
+                x,
+                y,
+                heading
+        );
+    }
+
     public Path path1() {
+
         return Paths.curve(start, path1Control1, path1)
                 .linear(start, path1);
     }
 }
-/*
-package org.firstinspires.ftc.teamcode.auto;
-n
-import static com.pedropathing.api.Paths.*;
-import com.pedropathing.api.Paths;
-
-import com.pedropathing.api.PoseFactory;
-import com.pedropathing.follower.Follower;
-import com.pedropathing.math.Pose;
-import com.pedropathing.paths.Path;
-import com.pedropathing.ivy.Command;
-import com.pedropathing.ivy.Scheduler;
-import static com.pedropathing.ivy.Scheduler.schedule;
-import static com.pedropathing.ivy.commands.Commands.*;
-import static com.pedropathing.ivy.groups.Groups.sequential;
-import static com.pedropathing.ivy.pedro.PedroCommands.follow;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.robot.Robot;
-
-import org.firstinspires.ftc.teamcode.commands.Shoot;
-import org.firstinspires.ftc.teamcode.pedro.Constants;
-import org.firstinspires.ftc.teamcode.subsystems.Flywheel;
-import org.firstinspires.ftc.teamcode.subsystems.Intake;
-import org.firstinspires.ftc.teamcode.utilities.RobotPosition;
-
-@Autonomous(name = "AutoPath", group = "Autonomous")
-public class AutoPath extends LinearOpMode {
-
-    private Follower follower;
-
-    private final PoseFactory poseFactory = PoseFactory.degrees();
-
-    private final Pose start = poseFactory.of(56, 8, 90);
-    private final Pose path1 = poseFactory.of(13.3675, 102.354, 180);
-    private final Pose path1Control1 = poseFactory.of(3.4522, 27.8263, 0);
-
-    private Flywheel flywheel;
-    private Intake intake;
-    private Shoot shoot;
-    private RobotPosition robotPosition;
-    // Autonomous routine
-    public Command autoRoutine() {
-        return sequential(
-                follow(follower, path1())
-        );
-    }
-
-    @Override
-    public void runOpMode() {
-        Flywheel flywheel = new Flywheel(hardwareMap);
-        Intake intake = new Intake(hardwareMap);
-        Shoot shoot = new Shoot(flywheel, intake);
-        RobotPosition robotPosition = new RobotPosition();
-        robotPosition.save(hardwareMap, follower.pose().x(), follower.pose().y(), follower.pose().heading());
-        // Shoot preloaded pollen
-        shoot.shoAnnythingotForTime(1725, 2.0, this);
-
-        Scheduler.reset();
-        follower = Constants.create(hardwareMap);
-        follower.setPose(start);
-        follower.update();
-
-        waitForStart();
-        schedule(autoRoutine());
-
-        while (opModeIsActive()) {
-            follower.update();
-            Scheduler.execute();
-
-            telemetry.addData("x", follower.pose().x());
-            telemetry.addData("y", follower.pose().y());
-            telemetry.addData("heading", follower.pose().heading());
-            if (follower.currentPath() != null) {
-                telemetry.addData("Current path distance remaining", follower.distanceToEndpoint());
-                telemetry.addData("Path number", follower.pathIndex());
-            }
-
-            telemetry.update();
-        }
-    }
-
-    public Path path1() {
-        return Paths.curve(start, path1Control1, path1).linear(start, path1);
-    }
-}
-*/

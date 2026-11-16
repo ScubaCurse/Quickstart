@@ -44,13 +44,10 @@ public class Shoot {
 
         flywheel.setVelocity(targetVelocity);
 
-        // Wait for shooter to spin up
-        // opMode.sleep(1000);
-        if (Math.abs(flywheel.getAverageVelocity() - targetVelocity) <= 50) {
+        opMode.sleep(1000);
             // Feed POLLEN
             intake.setPower(0.35);
             opMode.sleep((long)(seconds * 1000));
             stop();
-        }
     }
 }

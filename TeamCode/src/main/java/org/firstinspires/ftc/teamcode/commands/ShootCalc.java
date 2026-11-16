@@ -4,12 +4,12 @@ public class ShootCalc {
 
     private static final double[] distances = {
             // in inches, 30.48 - 243.84 cm
-            12, 24, 36, 48, 60, 72, 84, 96
+            24, 34, 48, 60, 72, 84
     };
 
     private static final double[] velocities = {
             // in encoder ticks per second
-            0, 0, 1725, 0, 0, 0, 0, 0
+            1650, 1750, 1875, 1925, 2175, 2300
     };
 
     public static double getTargetVelocity(double distance) {

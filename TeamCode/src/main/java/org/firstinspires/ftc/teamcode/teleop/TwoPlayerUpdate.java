@@ -4,11 +4,10 @@ package org.firstinspires.ftc.teamcode.teleop;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import com.pedropathing.follower.Follower;
 import com.pedropathing.revhub.localizers.PinpointLocalizer;
 import com.pedropathing.math.Pose;
 
-import org.firstinspires.ftc.teamcode.commands.ShootCalc;
+import org.firstinspires.ftc.teamcode.commands.Calculator;
 import org.firstinspires.ftc.teamcode.subsystems.Flywheel;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Drivetrain;
@@ -32,7 +31,10 @@ public class TwoPlayerUpdate extends LinearOpMode {
     private PinpointLocalizer localizer;
 
     private double speedMode;
-    private int targetVelocity;
+    private double targetVelocity;
+    private double targetRPM;
+    private boolean dpadLeftPressed = false;
+    private boolean dpadRightPressed = false;
 
     private double hiveX;
     private double hiveY;
@@ -49,6 +51,7 @@ public class TwoPlayerUpdate extends LinearOpMode {
     public void runOpMode() {
 
         targetVelocity = 1725;
+        targetRPM = 250;
 
         // Hive 2 selected by default
         hiveX = 57.5;
@@ -113,6 +116,7 @@ public class TwoPlayerUpdate extends LinearOpMode {
         }
 
         while (opModeIsActive()) {
+            // targetVelocity = ShootCalc.getTargetVelocity(distance);
 
             // Update Pinpoint localization
             localizer.update();
@@ -160,13 +164,13 @@ public class TwoPlayerUpdate extends LinearOpMode {
                 if (gamepad2.right_trigger > 0) {
 
                     shoot.shootWithIntake(
-                            ShootCalc.getTargetVelocity(distance)
+                            Calculator.rpmToTps(targetRPM, 28)
                     );
 
                 } else {
 
                     shoot.shoot(
-                            ShootCalc.getTargetVelocity(distance)
+                            Calculator.rpmToTps(targetRPM, 28)
                     );
                 }
 
@@ -183,7 +187,7 @@ public class TwoPlayerUpdate extends LinearOpMode {
                 shoot.stop();
             }
 
-
+            /*
             // Rumble when shooter velocity is close to target
             if (Math.abs(
                     flywheel.getAverageVelocity() - targetVelocity
@@ -191,14 +195,26 @@ public class TwoPlayerUpdate extends LinearOpMode {
 
                 gamepad2.rumble(500);
             }
-
+            */
+            if (gamepad2.dpad_left && !dpadLeftPressed) {
+                targetRPM = targetRPM + 250;
+            } else if (gamepad2.dpad_right && !dpadRightPressed) {
+                targetRPM = targetRPM - 250;
+            }
+            dpadLeftPressed = gamepad2.dpad_left;
+            dpadRightPressed = gamepad2.dpad_right;
 
             // TELEMETRY
 
-            telemetry.addData("Target Velocity", ShootCalc.getTargetVelocity(distance));
+            telemetry.addData("Target Velocity", targetVelocity);
             telemetry.addData(
                     "Shooter Velocity",
                     flywheel.getAverageVelocity()
+            );
+            telemetry.addData("Target RPM", targetRPM);
+            telemetry.addData(
+                    "Shooter RPM",
+                    Calculator.tpsToRpm(flywheel.getAverageVelocity(), 28)
             );
 
             telemetry.addData("Hive Selected", hiveSelected);

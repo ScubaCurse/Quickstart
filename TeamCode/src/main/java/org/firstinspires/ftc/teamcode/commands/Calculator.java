@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.commands;
 
-public class ShootCalc {
+public class Calculator {
 
     private static final double[] distances = {
             // in inches, 30.48 - 243.84 cm
@@ -36,5 +36,15 @@ public class ShootCalc {
         }
 
         return velocities[velocities.length - 1];
+    }
+    public static double tpsToRpm(double tps, double cer) {
+
+        double rpm = (tps * 60)/cer;
+        return rpm;
+    }
+    public static double rpmToTps(double rpm, double cer) {
+
+        double tps = (rpm * cer)/60;
+        return tps;
     }
 }

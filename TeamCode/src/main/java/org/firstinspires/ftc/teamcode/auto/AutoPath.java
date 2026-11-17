@@ -94,7 +94,7 @@ public class AutoPath extends LinearOpMode {
             if (opModeIsActive()) {
 
                 // Shoot preloaded pollen
-                shoot.shootForTime(1700, 2.0, this);
+                Shoot.shootForTime(1700, 2.0);
 
                 if (opModeIsActive()) {
 
@@ -120,7 +120,7 @@ public class AutoPath extends LinearOpMode {
 
                             lastSaveTime = currentTime;
                         }
-
+                        
                         // Execute scheduled commands
                         Scheduler.execute();
 

@@ -4,11 +4,10 @@ package org.firstinspires.ftc.teamcode.teleop;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import com.pedropathing.follower.Follower;
 import com.pedropathing.revhub.localizers.PinpointLocalizer;
 import com.pedropathing.math.Pose;
 
-import org.firstinspires.ftc.teamcode.commands.ShootCalc;
+import org.firstinspires.ftc.teamcode.commands.Calculator;
 import org.firstinspires.ftc.teamcode.subsystems.Flywheel;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Drivetrain;
@@ -160,13 +159,13 @@ public class OnePlayerUpdate extends LinearOpMode {
                 if (gamepad1.right_trigger > 0) {
 
                     shoot.shootWithIntake(
-                            ShootCalc.getTargetVelocity(distance)
+                            Calculator.getTargetVelocity(distance)
                     );
 
                 } else {
 
                     shoot.shoot(
-                            ShootCalc.getTargetVelocity(distance)
+                            Calculator.getTargetVelocity(distance)
                     );
                 }
 
@@ -195,7 +194,7 @@ public class OnePlayerUpdate extends LinearOpMode {
 
             // TELEMETRY
 
-            telemetry.addData("Target Velocity", ShootCalc.getTargetVelocity(distance));
+            telemetry.addData("Target Velocity", Calculator.getTargetVelocity(distance));
             telemetry.addData(
                     "Shooter Velocity",
                     flywheel.getAverageVelocity()

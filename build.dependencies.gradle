@@ -19,4 +19,5 @@ dependencies {
     implementation 'com.pedropathing:tuning:1.0.3'
 
     implementation 'com.pedropathing.ivy:pedro:1.1.1'
+    implementation "com.bylazar:panels:1.0.9"
 }

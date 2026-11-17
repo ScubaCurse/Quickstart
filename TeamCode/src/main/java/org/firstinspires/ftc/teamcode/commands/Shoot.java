@@ -1,14 +1,16 @@
 package org.firstinspires.ftc.teamcode.commands;
 
+import com.pedropathing.ivy.Command;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.subsystems.Flywheel;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 
 public class Shoot {
 
-    private Flywheel flywheel;
-    private Intake intake;
+    private static Flywheel flywheel;
+    private static Intake intake;
 
     public Shoot(Flywheel flywheel, Intake intake) {
         this.flywheel = flywheel;
@@ -39,15 +41,50 @@ public class Shoot {
         flywheel.stop();
         intake.stop();
     }
-    public void shootForTime(double targetVelocity, double seconds,
-                             LinearOpMode opMode) {
-
-        flywheel.setVelocity(targetVelocity);
-
-        opMode.sleep(1000);
-            // Feed POLLEN
-            intake.setPower(0.35);
-            opMode.sleep((long)(seconds * 1000));
-            stop();
+    public static Command shootForTime(double target, double seconds) {
+        ElapsedTime timer = new ElapsedTime();
+        return Command.build()
+                .setStart(timer::reset)
+                .setExecute(() -> {
+                    if (timer.seconds() >= seconds) {
+                        intake.setPower(0.35);
+                    }
+                })
+                .setDone(() -> timer.seconds() >= seconds + 1)
+                .setEnd(endCondition -> {
+                    intake.setPower(0);
+                    flywheel.setVelocity(0);
+                })
+                .requiring(flywheel, intake);
+    }
+    public static Command timedIntake(double power, double seconds) {
+        ElapsedTime timer = new ElapsedTime();
+        return Command.build()
+                .setStart(timer::reset)
+                .setExecute(() -> {
+                    if (timer.seconds() >= seconds) {
+                        intake.intake();
+                    }
+                })
+                .setDone(() -> timer.seconds() >= seconds + 1)
+                .setEnd(endCondition -> {
+                    intake.setPower(0);
+                })
+                .requiring(flywheel, intake);
+    }
+    public static Command timedReverseIntake(double power, double seconds) {
+        ElapsedTime timer = new ElapsedTime();
+        return Command.build()
+                .setStart(timer::reset)
+                .setExecute(() -> {
+                    if (timer.seconds() >= seconds) {
+                        intake.reverse();
+                    }
+                })
+                .setDone(() -> timer.seconds() >= seconds + 1)
+                .setEnd(endCondition -> {
+                    intake.setPower(0);
+                })
+                .requiring(flywheel, intake);
     }
 }

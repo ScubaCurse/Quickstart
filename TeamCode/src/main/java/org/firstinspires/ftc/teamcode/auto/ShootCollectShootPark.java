@@ -6,9 +6,6 @@ import static com.pedropathing.ivy.Scheduler.schedule;
 import static com.pedropathing.ivy.groups.Groups.parallel;
 import static com.pedropathing.ivy.groups.Groups.sequential;
 import static com.pedropathing.ivy.pedro.PedroCommands.follow;
-import static org.firstinspires.ftc.teamcode.commands.Shoot.shootForTime;
-import static org.firstinspires.ftc.teamcode.commands.Shoot.timedIntake;
-
 import com.pedropathing.api.Paths;
 import com.pedropathing.api.PoseFactory;
 import com.pedropathing.follower.Follower;
@@ -19,14 +16,20 @@ import com.pedropathing.paths.Path;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+import org.firstinspires.ftc.teamcode.commands.Shoot;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
+import org.firstinspires.ftc.teamcode.subsystems.Flywheel;
+import org.firstinspires.ftc.teamcode.subsystems.Intake;
 
 // OpMode imports
 // Our own
 
 @Autonomous(name = "ShootAndCollectTwice", group = "Autonomous")
-public class ShootAndCollectTwice extends LinearOpMode {
+public class ShootCollectShootPark extends LinearOpMode {
 
+    private Flywheel flywheel;
+    private Intake intake;
+    private Shoot shoot;
     private Follower follower;
     private final PoseFactory poseFactory = PoseFactory.degrees();
 
@@ -64,14 +67,6 @@ public class ShootAndCollectTwice extends LinearOpMode {
         return Paths.line(pathToHive, lineUpHive2).constant(lineUpHive2);
     }
 
-    public Path collectFromHuman() {
-        return Paths.curve(collectFromHumanStart, collectFromHumanControl1, collectFromHuman).linear(collectFromHumanStart, collectFromHuman);
-    }
-
-    public Path backToHive2() {
-        return Paths.curve(backToHive2Start, backToHive2Control1, backToHive2).linear(backToHive2Start, backToHive2);
-    }
-
     public Path park() {
         return Paths.curve(parkStart, parkControl1, park).linear(parkStart, park);
     }
@@ -79,26 +74,34 @@ public class ShootAndCollectTwice extends LinearOpMode {
     // Autonomous routine
     public Command autoRoutine() {
         return sequential(
-                shootForTime(1725,2),
+                shoot.shootForTime(1725,2),
                 movePlusIntake,
-                follow(follower, halfFlowerHive()),
+                reverseIntakeHalf,
                 follow(follower, pathToHive()),
                 follow(follower, lineUpHive2()),
-                shootForTime(1725,2),
-                follow(follower, collectFromHuman()),
-                follow(follower, backToHive2()),
-                shootForTime(1725,2),
+                shoot.shootForTime(1725,2),
                 follow(follower, park())
         );
     }
     Command movePlusIntake = parallel(
             follow(follower, collectPollen1()),
-            timedIntake(1,5)
+            shoot.timedIntake(1,5)
+    );
+    Command reverseIntakeHalf = parallel(
+            follow(follower, halfFlowerHive()),
+            shoot.timedReverseIntake(0.1, 0.1)
     );
     @Override
     public void runOpMode() {
         Scheduler.reset();
+
         follower = Constants.create(hardwareMap);
+
+        flywheel = new Flywheel(hardwareMap);
+        intake = new Intake(hardwareMap);
+
+        shoot = new Shoot(flywheel, intake);
+
         follower.setPose(start);
         follower.update();
 

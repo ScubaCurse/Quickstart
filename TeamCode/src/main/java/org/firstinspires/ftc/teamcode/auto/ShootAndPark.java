@@ -12,7 +12,11 @@ import static com.pedropathing.ivy.Scheduler.schedule;
 import static com.pedropathing.ivy.groups.Groups.parallel;
 import static com.pedropathing.ivy.groups.Groups.sequential;
 import static com.pedropathing.ivy.pedro.PedroCommands.follow;
+
+import org.firstinspires.ftc.teamcode.commands.Shoot;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
+import org.firstinspires.ftc.teamcode.subsystems.Flywheel;
+import org.firstinspires.ftc.teamcode.subsystems.Intake;
 
 // OpMode imports
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -25,7 +29,9 @@ import static org.firstinspires.ftc.teamcode.commands.Shoot.*;
 public class ShootAndPark extends LinearOpMode {
 
     private Follower follower;
-
+    private Flywheel flywheel;
+    private Intake intake;
+    private Shoot shoot;
     private final PoseFactory poseFactory = PoseFactory.degrees();
 
     private final Pose start = poseFactory.of(57.493, 7.8341, -90);
@@ -38,22 +44,30 @@ public class ShootAndPark extends LinearOpMode {
 
     // Autonomous routine
     public Command autoRoutine() {
+
         return sequential(
-                shootForTime(1725,2),
+                shoot.shootForTime(1725,5),
                 follow(follower, path1())
         );
     }
-    Command movePlusIntake = parallel(
-            follow(follower, path1()),
-            timedIntake(1,5)
-    );
+
     @Override
     public void runOpMode() {
         Scheduler.reset();
+
         follower = Constants.create(hardwareMap);
+
+        flywheel = new Flywheel(hardwareMap);
+        intake = new Intake(hardwareMap);
+
+        shoot = new Shoot(flywheel, intake);
+
         follower.setPose(start);
         follower.update();
-
+        Command movePlusIntake = parallel(
+                follow(follower, path1())
+                //Shoot.timedIntake(1,5)
+        );
         waitForStart();
         schedule(autoRoutine());
 
@@ -61,12 +75,13 @@ public class ShootAndPark extends LinearOpMode {
             follower.update();
             Scheduler.execute();
 
-            // My own code:
+
+            /*
             blackboard.put("poseX", follower.pose().x());
             blackboard.put("poseY", follower.pose().y());
             blackboard.put("poseHeading", follower.pose().heading());
-            // -
 
+            */
             telemetry.addData("x", follower.pose().x());
             telemetry.addData("y", follower.pose().y());
             telemetry.addData("heading", follower.pose().heading());

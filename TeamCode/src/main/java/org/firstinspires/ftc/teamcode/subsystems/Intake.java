@@ -20,7 +20,7 @@ public class Intake {
     }
 
     public void intake() {
-        setPower(0.35);
+        setPower(0.5);
     }
 
     public void reverse() {

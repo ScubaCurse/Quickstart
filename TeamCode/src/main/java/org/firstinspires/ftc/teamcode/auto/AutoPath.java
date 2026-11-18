@@ -94,7 +94,7 @@ public class AutoPath extends LinearOpMode {
             if (opModeIsActive()) {
 
                 // Shoot preloaded pollen
-                Shoot.shootForTime(1700, 2.0);
+                shoot.shootForTime(1725, 2.0);
 
                 if (opModeIsActive()) {
 

@@ -17,7 +17,7 @@ import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.commands.Shoot;
 import org.firstinspires.ftc.teamcode.utilities.RobotTelemetry;
 
-@TeleOp(name = "TwoPlayerUpdate")
+@TeleOp(name = "TwoPlayerThree")
 public class TwoPlayerThree extends LinearOpMode {
 
     private Drivetrain drivetrain;

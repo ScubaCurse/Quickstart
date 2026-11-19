@@ -53,7 +53,7 @@ public class Shoot {
                         intake.intake();
                     }
                 })
-                .setDone(() -> timer.seconds() >= seconds + 5)
+                .setDone(() -> timer.seconds() >= seconds + 1)
                 .setEnd(endCondition -> {
                     flywheel.stop();
                     intake.stop();
@@ -66,9 +66,7 @@ public class Shoot {
 
         return Command.build()
                 .setStart(timer::reset)
-                .setExecute(() -> {
-                    intake.setPower(power);
-                })
+                .setExecute(() -> intake.setPower(power))
                 .setDone(() -> timer.seconds() >= seconds)
                 .setEnd(endCondition -> intake.stop())
                 .requiring(intake);
@@ -79,9 +77,7 @@ public class Shoot {
 
         return Command.build()
                 .setStart(timer::reset)
-                .setExecute(() -> {
-                    intake.setPower(-Math.abs(power));
-                })
+                .setExecute(() -> intake.setPower(-power))
                 .setDone(() -> timer.seconds() >= seconds)
                 .setEnd(endCondition -> intake.stop())
                 .requiring(intake);

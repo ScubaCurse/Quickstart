@@ -1,21 +1,15 @@
-
 package org.firstinspires.ftc.teamcode.teleop;
-
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-
 import com.pedropathing.revhub.localizers.PinpointLocalizer;
 import com.pedropathing.math.Pose;
-
 import org.firstinspires.ftc.teamcode.commands.Calculator;
 import org.firstinspires.ftc.teamcode.subsystems.Flywheel;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Drivetrain;
 import org.firstinspires.ftc.teamcode.commands.Shoot;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
-import org.firstinspires.ftc.teamcode.utilities.RobotPosition;
-
-import org.json.JSONObject;
 
 @TeleOp(name = "TwoPlayerUpdate")
 public class TwoPlayerUpdate extends LinearOpMode {
@@ -23,90 +17,35 @@ public class TwoPlayerUpdate extends LinearOpMode {
     // Gamepad 1 = Driver
     // Gamepad 2 = Intake / Shooter
 
-    private Drivetrain drivetrain;
-    private Flywheel flywheel;
-    private Intake intake;
-    private Shoot shoot;
+    private double speedMode = 0.01;
 
-    private PinpointLocalizer localizer;
+    private double targetRPM = 0;
 
-    private double speedMode;
-    private double targetVelocity;
-    private double targetRPM;
     private boolean dpadLeftPressed = false;
     private boolean dpadRightPressed = false;
 
-    private double hiveX;
-    private double hiveY;
-    private int hiveSelected;
-
-    private double distance;
-
-    // Restored autonomous position
-    private double savedX = Double.NaN;
-    private double savedY = Double.NaN;
-    private double savedHeading = Double.NaN;
+    private double hiveX = 57.5;
+    private double hiveY = 96.9;
+    private int hiveSelected = 2;
 
     @Override
     public void runOpMode() {
 
-        targetVelocity = 1725;
-        targetRPM = 250;
+        // INITIALIZE HARDWARE
+        Drivetrain drivetrain = new Drivetrain(hardwareMap);
+        Flywheel flywheel = new Flywheel(hardwareMap);
+        Intake intake = new Intake(hardwareMap);
 
-        // Hive 2 selected by default
-        hiveX = 57.5;
-        hiveY = 96.9;
-        hiveSelected = 2;
+        Shoot shoot = new Shoot(flywheel, intake);
 
-        speedMode = 0.01;
+        // INITIALIZE PINPOINT
 
-        // Initialize subsystems
-        drivetrain = new Drivetrain(hardwareMap);
-        flywheel = new Flywheel(hardwareMap);
-        intake = new Intake(hardwareMap);
-
-        shoot = new Shoot(flywheel, intake);
-
-        // Initialize Pinpoint
-        localizer = new PinpointLocalizer(
+        PinpointLocalizer localizer = new PinpointLocalizer(
                 hardwareMap,
                 Constants.localizerConfig
         );
 
-        // Load autonomous position ONCE
-        JSONObject saved = RobotPosition.load(hardwareMap);
-
-        if (saved != null) {
-
-            savedX = saved.optDouble("stoppedX", Double.NaN);
-            savedY = saved.optDouble("stoppedY", Double.NaN);
-            savedHeading = saved.optDouble("stoppedHeading", Double.NaN);
-
-            if (Double.isFinite(savedX) &&
-                    Double.isFinite(savedY) &&
-                    Double.isFinite(savedHeading)) {
-
-                // Restore field position
-                localizer.setPose(
-                        new Pose(savedX, savedY, savedHeading)
-                );
-
-                telemetry.addData("Position", "Restored successfully");
-                telemetry.addData("Saved X", savedX);
-                telemetry.addData("Saved Y", savedY);
-                telemetry.addData("Saved Heading", savedHeading);
-
-            } else {
-
-                telemetry.addData("Position", "Invalid saved coordinates");
-            }
-
-        } else {
-
-            telemetry.addData("Position", "No saved position found");
-        }
-
-        telemetry.addData("Status", "Initialized");
+        telemetry.addLine("TeleOp Initialized");
         telemetry.update();
 
         waitForStart();
@@ -115,17 +54,22 @@ public class TwoPlayerUpdate extends LinearOpMode {
             return;
         }
 
-        while (opModeIsActive()) {
-            // targetVelocity = ShootCalc.getTargetVelocity(distance);
+        // Restore Pinpoint starting position ONCE
+        Object value = OpMode.blackboard.get("pose");
+        Pose pose = (Pose) value;
+        localizer.setPose(pose);
 
-            // Update Pinpoint localization
+        // MAIN TELEOP LOOP
+
+        while (opModeIsActive()) {
+
+            // UPDATE LOCALIZATION
+
             localizer.update();
 
-            Pose currentPose = localizer.pose();
-
-            double robotX = currentPose.x();
-            double robotY = currentPose.y();
-            double robotHeading = currentPose.heading();
+            double robotX = localizer.pose().x();
+            double robotY = localizer.pose().y();
+            double robotHeading = localizer.pose().heading();
 
             // HIVE SELECTION
 
@@ -142,10 +86,11 @@ public class TwoPlayerUpdate extends LinearOpMode {
                 hiveY = 96.9;
             }
 
-            // Calculate distance to hive
-            distance = Math.sqrt(
-                    ((hiveY - robotY) * (hiveY - robotY)) +
-                            ((hiveX - robotX) * (hiveX - robotX))
+            // DISTANCE TO HIVE
+
+            double distance = Math.sqrt(
+                    Math.pow(hiveY - robotY, 2) +
+                            Math.pow(hiveX - robotX, 2)
             );
 
             // DRIVETRAIN CONTROL
@@ -156,7 +101,6 @@ public class TwoPlayerUpdate extends LinearOpMode {
 
             drivetrain.mecanum(axial, lateral, yaw);
 
-
             // SHOOTER CONTROL
 
             if (gamepad2.right_bumper) {
@@ -164,13 +108,13 @@ public class TwoPlayerUpdate extends LinearOpMode {
                 if (gamepad2.right_trigger > 0) {
 
                     shoot.shootWithIntake(
-                            Calculator.rpmToTps(targetRPM, 28)
+                            Calculator.getTargetVelocity(distance)
                     );
 
                 } else {
 
                     shoot.shoot(
-                            Calculator.rpmToTps(targetRPM, 28)
+                            Calculator.getTargetVelocity(distance)
                     );
                 }
 
@@ -187,35 +131,50 @@ public class TwoPlayerUpdate extends LinearOpMode {
                 shoot.stop();
             }
 
-            /*
-            // Rumble when shooter velocity is close to target
+            // SHOOTER RUMBLE
+
+            double targetVelocity = 1725;
             if (Math.abs(
                     flywheel.getAverageVelocity() - targetVelocity
             ) <= 100) {
 
                 gamepad2.rumble(500);
             }
-            */
+
+            // TARGET RPM ADJUSTMENT
+
             if (gamepad2.dpad_left && !dpadLeftPressed) {
-                targetRPM = targetRPM + 250;
+
+                targetRPM += 250;
+
             } else if (gamepad2.dpad_right && !dpadRightPressed) {
-                targetRPM = targetRPM - 250;
+
+                targetRPM -= 250;
             }
+
             dpadLeftPressed = gamepad2.dpad_left;
             dpadRightPressed = gamepad2.dpad_right;
 
             // TELEMETRY
+
+            telemetry.addLine("--- SHOOTER ---");
 
             telemetry.addData("Target Velocity", targetVelocity);
             telemetry.addData(
                     "Shooter Velocity",
                     flywheel.getAverageVelocity()
             );
+
             telemetry.addData("Target RPM", targetRPM);
+
             telemetry.addData(
                     "Shooter RPM",
-                    Calculator.tpsToRpm(flywheel.getAverageVelocity(), 28)
+                    Calculator.tpsToRpm(
+                            flywheel.getAverageVelocity(), 28
+                    )
             );
+
+            telemetry.addLine("--- HIVE ---");
 
             telemetry.addData("Hive Selected", hiveSelected);
             telemetry.addData("Distance to Hive", distance);
@@ -226,14 +185,11 @@ public class TwoPlayerUpdate extends LinearOpMode {
             telemetry.addData("Robot Y", robotY);
             telemetry.addData("Robot Heading", robotHeading);
 
-            telemetry.addLine("--- SAVED AUTO POSITION ---");
+            telemetry.addLine("--- AUTONOMOUS POSITION ---");
 
-            telemetry.addData("Saved X", savedX);
-            telemetry.addData("Saved Y", savedY);
-            telemetry.addData("Saved Heading", savedHeading);
+            telemetry.addData("Blackboard", pose);
 
             telemetry.update();
-
 
             // DRIVE SPEED CONTROL
 
@@ -246,7 +202,8 @@ public class TwoPlayerUpdate extends LinearOpMode {
             }
         }
 
-        // Stop mechanisms when TeleOp ends
+        // STOP MECHANISMS
+
         shoot.stop();
     }
 }

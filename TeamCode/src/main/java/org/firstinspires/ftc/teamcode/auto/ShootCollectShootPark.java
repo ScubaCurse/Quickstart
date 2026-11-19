@@ -27,10 +27,10 @@ import org.firstinspires.ftc.teamcode.subsystems.Intake;
 @Autonomous(name = "ShootAndCollectTwice", group = "Autonomous")
 public class ShootCollectShootPark extends LinearOpMode {
 
-    private Flywheel flywheel;
-    private Intake intake;
-    private Shoot shoot;
-    private Follower follower;
+    private final Flywheel flywheel = new Flywheel(hardwareMap);
+    private final Intake intake = new Intake(hardwareMap);
+    private final Shoot shoot = new Shoot(flywheel, intake);
+    private final Follower follower = Constants.create(hardwareMap);
     private final PoseFactory poseFactory = PoseFactory.degrees();
 
     private final Pose start = poseFactory.of(57.493, 7.8341, -90);
@@ -41,12 +41,6 @@ public class ShootCollectShootPark extends LinearOpMode {
     private final Pose pathToHive = poseFactory.of(59.6191, 111.4372, 90);
     private final Pose pathToHiveControl1 = poseFactory.of(9.8816, 141.5, 0);
     private final Pose lineUpHive2 = poseFactory.of(60.9428, 133.462, 90);
-    private final Pose collectFromHumanStart = poseFactory.of(60.9428, 133.462, 90);
-    private final Pose collectFromHuman = poseFactory.of(9.2987, 110.6561, 180);
-    private final Pose collectFromHumanControl1 = poseFactory.of(48.67, 104.5056, 0);
-    private final Pose backToHive2Start = poseFactory.of(9.2987, 110.6561, 180);
-    private final Pose backToHive2 = poseFactory.of(60.5636, 133.2824, 90);
-    private final Pose backToHive2Control1 = poseFactory.of(48.8162, 104.6133, 0);
     private final Pose parkStart = poseFactory.of(60.5636, 133.2824, 90);
     private final Pose park = poseFactory.of(9.4741, 110.6735, 180);
     private final Pose parkControl1 = poseFactory.of(48.9452, 104.9789, 0);
@@ -94,13 +88,6 @@ public class ShootCollectShootPark extends LinearOpMode {
     @Override
     public void runOpMode() {
         Scheduler.reset();
-
-        follower = Constants.create(hardwareMap);
-
-        flywheel = new Flywheel(hardwareMap);
-        intake = new Intake(hardwareMap);
-
-        shoot = new Shoot(flywheel, intake);
 
         follower.setPose(start);
         follower.update();

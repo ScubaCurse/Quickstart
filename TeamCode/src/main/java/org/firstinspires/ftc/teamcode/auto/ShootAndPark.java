@@ -1,4 +1,3 @@
-
 package org.firstinspires.ftc.teamcode.auto;
 
 import com.pedropathing.api.Paths;
@@ -17,7 +16,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
-import org.firstinspires.ftc.teamcode.commands.Shoot;
+import org.firstinspires.ftc.teamcode.util.Shoot;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.Flywheel;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
@@ -26,11 +25,7 @@ import org.firstinspires.ftc.teamcode.subsystems.Intake;
 public class ShootAndPark extends LinearOpMode {
 
     private Follower follower;
-    private Intake intake;
     private Shoot shoot;
-
-    // Stores the last valid robot position
-    private Pose lastValidPose;
 
     private final PoseFactory poseFactory = PoseFactory.degrees();
 
@@ -45,7 +40,7 @@ public class ShootAndPark extends LinearOpMode {
 
     public Command autoRoutine() {
         return sequential(
-                shoot.shootForTime(1725, 2),
+                shoot.shootForTime(1783.133333333, 2),
                 follow(follower, path1())
         );
     }
@@ -59,13 +54,14 @@ public class ShootAndPark extends LinearOpMode {
         follower = Constants.create(hardwareMap);
 
         Flywheel flywheel = new Flywheel(hardwareMap);
-        intake = new Intake(hardwareMap);
+        Intake intake = new Intake(hardwareMap);
         shoot = new Shoot(flywheel, intake);
 
         // SET STARTING POSITION
         follower.setPose(start);
 
-        lastValidPose = follower.pose();
+        // Stores the last valid robot position
+        Pose lastValidPose = follower.pose();
 
         // SAVE INITIAL POSITION
         OpMode.blackboard.put("pose", lastValidPose);
@@ -82,18 +78,16 @@ public class ShootAndPark extends LinearOpMode {
                 return;
             }
 
-            // START AUTONOMOUS ROUTINE
             schedule(autoRoutine());
 
             while (opModeIsActive()) {
 
-                // UPDATE FOLLOWER
                 follower.update();
 
-                // GET CURRENT POSE
                 Pose currentPose = follower.pose();
 
-                // ONLY SAVE IF POSE IS NOT (0, 0, 0)
+                // Had issues with odometry resetting itself to (0.0, 0.0, 0.0) when stopping.
+                // It would save that empty value. This if statement prevents that.
                 if (Math.abs(currentPose.x()) > 0.001 ||
                         Math.abs(currentPose.y()) > 0.001 ||
                         Math.abs(currentPose.heading()) > 0.001) {
@@ -148,9 +142,6 @@ public class ShootAndPark extends LinearOpMode {
             }
 
         } finally {
-
-            // SAVE LAST VALID POSE
-            // DO NOT READ follower.pose() HERE!
 
             OpMode.blackboard.put("pose", lastValidPose);
 

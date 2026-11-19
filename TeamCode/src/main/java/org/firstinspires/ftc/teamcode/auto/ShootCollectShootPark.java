@@ -15,8 +15,9 @@ import com.pedropathing.math.Pose;
 import com.pedropathing.paths.Path;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
-import org.firstinspires.ftc.teamcode.commands.Shoot;
+import org.firstinspires.ftc.teamcode.util.Shoot;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.Flywheel;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
@@ -31,6 +32,7 @@ public class ShootCollectShootPark extends LinearOpMode {
     private final Intake intake = new Intake(hardwareMap);
     private final Shoot shoot = new Shoot(flywheel, intake);
     private final Follower follower = Constants.create(hardwareMap);
+    public Pose lastValidPose;
     private final PoseFactory poseFactory = PoseFactory.degrees();
 
     private final Pose start = poseFactory.of(57.493, 7.8341, -90);
@@ -97,13 +99,23 @@ public class ShootCollectShootPark extends LinearOpMode {
 
         while (opModeIsActive()) {
             follower.update();
-            Scheduler.execute();
 
-            // My own code:
-            blackboard.put("poseX", follower.pose().x());
-            blackboard.put("poseY", follower.pose().y());
-            blackboard.put("poseHeading", follower.pose().heading());
-            // -
+            Pose currentPose = follower.pose();
+
+            // Had issues with odometry resetting itself to (0.0, 0.0, 0.0) when stopping.
+            // It would save that empty value. This if statement prevents that.
+            if (Math.abs(currentPose.x()) > 0.001 ||
+                    Math.abs(currentPose.y()) > 0.001 ||
+                    Math.abs(currentPose.heading()) > 0.001) {
+
+                lastValidPose = currentPose;
+
+                OpMode.blackboard.put("pose", lastValidPose);
+            }
+
+            Scheduler.execute();
+            
+            blackboard.put("Blackboard", lastValidPose);
 
             telemetry.addData("x", follower.pose().x());
             telemetry.addData("y", follower.pose().y());

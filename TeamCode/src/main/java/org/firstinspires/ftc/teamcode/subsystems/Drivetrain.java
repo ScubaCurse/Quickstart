@@ -5,10 +5,10 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 public class Drivetrain {
 
-    private DcMotor FL;
-    private DcMotor RL;
-    private DcMotor FR;
-    private DcMotor RR;
+    private final DcMotor FL;
+    private final DcMotor RL;
+    private final DcMotor FR;
+    private final DcMotor RR;
 
     public Drivetrain(HardwareMap hardwareMap) {
 

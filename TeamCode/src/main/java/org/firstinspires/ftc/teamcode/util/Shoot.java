@@ -1,5 +1,5 @@
 
-package org.firstinspires.ftc.teamcode.commands;
+package org.firstinspires.ftc.teamcode.util;
 
 import com.pedropathing.ivy.Command;
 import com.qualcomm.robotcore.util.ElapsedTime;

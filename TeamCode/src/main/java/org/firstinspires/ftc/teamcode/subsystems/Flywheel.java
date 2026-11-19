@@ -6,8 +6,8 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 public class Flywheel {
 
-    private DcMotorEx shooterLeft;
-    private DcMotorEx shooterRight;
+    private final DcMotorEx shooterLeft;
+    private final DcMotorEx shooterRight;
 
     public Flywheel(HardwareMap hardwareMap) {
 

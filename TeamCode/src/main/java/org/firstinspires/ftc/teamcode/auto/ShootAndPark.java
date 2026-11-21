@@ -40,7 +40,7 @@ public class ShootAndPark extends LinearOpMode {
 
     public Command autoRoutine() {
         return sequential(
-                shoot.shootForTime(1783.133333333, 2),
+                shoot.shootForTime(1730, 2),
                 follow(follower, path1())
         );
     }

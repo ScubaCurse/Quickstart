@@ -1,4 +1,6 @@
 package org.firstinspires.ftc.teamcode.teleop;
+import com.pedropathing.follower.Follower;
+import com.pedropathing.revhub.localizers.PinpointConfig;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -14,6 +16,7 @@ import org.firstinspires.ftc.teamcode.util.Shoot;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
 import com.pedropathing.drivetrain.DrivePowers;
 import com.pedropathing.follower.ManualDrive;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 
 @TeleOp(name = "Two Player")
 public class TwoPlayer extends LinearOpMode {
@@ -29,10 +32,12 @@ public class TwoPlayer extends LinearOpMode {
     public void runOpMode() {
 
         // INITIALIZE HARDWARE
+        Follower follower = Constants.create(hardwareMap);
         Drivetrain drivetrain = new Drivetrain(hardwareMap);
         Flywheel flywheel = new Flywheel(hardwareMap);
         Intake intake = new Intake(hardwareMap);
         Shoot shoot = new Shoot(flywheel, intake);
+        // localizer = new PinpointLocalizer(hardwareMap, pinp);
         double targetRPM = 0;
 
         // INITIALIZE PINPOINT
@@ -127,11 +132,14 @@ public class TwoPlayer extends LinearOpMode {
             drivetrain.mecanum(axial, lateral, yaw);
             */
             DrivePowers powers = ManualDrive.fieldCentric(
-                    -gamepad1.left_stick_y,
-                    gamepad1.left_stick_x,
-                    gamepad1.right_stick_x,
-                    localizer.pose().heading()
+                    -gamepad1.left_stick_y/2,
+                    -gamepad1.left_stick_x/2,
+                    -gamepad1.right_stick_x,
+                    follower.pose().heading()
             );
+            ManualDrive.driveOrHold(follower, powers);
+            follower.update();
+
             // SHOOTER CONTROL
             /*
             double forward = -gamepad1.left_stick_y;
@@ -150,13 +158,13 @@ public class TwoPlayer extends LinearOpMode {
                 if (gamepad2.right_trigger > 0) {
 
                     shoot.shootWithIntake(
-                            Calculator.rpmToTps(targetRPM, 28)
+                            Calculator.getTargetVelocity(distance)
                     );
 
                 } else {
 
                     shoot.shoot(
-                            Calculator.rpmToTps(targetRPM, 28)
+                            Calculator.getTargetVelocity(distance)
                     );
 
                 }
@@ -209,7 +217,7 @@ public class TwoPlayer extends LinearOpMode {
             telemetry.update();
 
             // DRIVE SPEED CONTROL
-
+            /*
             double speedMode = 0.001;
             if (gamepad1.dpad_up) {
                 speedMode = 3;
@@ -218,10 +226,12 @@ public class TwoPlayer extends LinearOpMode {
             if (gamepad1.dpad_down) {
                 speedMode = 0.01;
             }
+             */
         }
 
         // STOP MECHANISMS
 
         shoot.stop();
     }
+
 }

@@ -1,0 +1,34 @@
+package org.firstinspires.ftc.teamcode.teleop;
+
+import com.pedropathing.drivetrain.DrivePowers;
+import com.pedropathing.follower.Follower;
+import com.pedropathing.follower.ManualDrive;
+import com.pedropathing.math.Pose;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+
+import org.firstinspires.ftc.teamcode.pedro.Constants;
+
+@TeleOp(name = "Example TeleOp")
+public class ExampleTeleOp extends OpMode {
+
+    private Follower follower;
+
+    @Override
+    public void init() {
+        follower = Constants.create(hardwareMap);
+        follower.setPose(new Pose(0.0, 0.0, 0.0));
+    }
+
+    @Override
+    public void loop() {
+        DrivePowers powers = ManualDrive.fieldCentric(
+                -gamepad1.left_stick_y/2,
+                -gamepad1.left_stick_x/2,
+                -gamepad1.right_stick_x,
+                follower.pose().heading()
+        );
+        ManualDrive.driveOrHold(follower, powers);
+        follower.update();
+    }
+}

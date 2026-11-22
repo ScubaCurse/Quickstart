@@ -25,7 +25,7 @@ public class ExampleTeleOp extends OpMode {
         DrivePowers powers = ManualDrive.fieldCentric(
                 -gamepad1.left_stick_y/2,
                 -gamepad1.left_stick_x/2,
-                -gamepad1.right_stick_x,
+                -gamepad1.right_stick_x/2,
                 follower.pose().heading()
         );
         ManualDrive.driveOrHold(follower, powers);

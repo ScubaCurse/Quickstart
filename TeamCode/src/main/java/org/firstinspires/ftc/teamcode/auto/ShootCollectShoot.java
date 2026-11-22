@@ -1,7 +1,7 @@
-
 package org.firstinspires.ftc.teamcode.auto;
 
 // Pedro Pathing imports
+
 import static com.pedropathing.ivy.Scheduler.schedule;
 import static com.pedropathing.ivy.groups.Groups.parallel;
 import static com.pedropathing.ivy.groups.Groups.sequential;
@@ -24,8 +24,8 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.Flywheel;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 
-@Autonomous(name = "ShootAndCollectTwice", group = "Autonomous")
-public class ShootCollectShootPark extends LinearOpMode {
+@Autonomous(name = "Shoot, Collect, Shoot", group = "Autonomous")
+public class ShootCollectShoot extends LinearOpMode {
 
     private Shoot shoot;
     private Follower follower;
@@ -35,16 +35,16 @@ public class ShootCollectShootPark extends LinearOpMode {
     private final PoseFactory poseFactory = PoseFactory.degrees();
 
     private final Pose start = poseFactory.of(57.493, 7.8341, -90);
-    private final Pose collectPollen1 = poseFactory.of(8.391, 6.6383, 180);
+    private final Pose collectPollen1 = poseFactory.of(6.7043, 5.4576, 180);
     private final Pose collectPollen1Control1 = poseFactory.of(58.8716, 34.2268, 0);
     private final Pose collectPollen1Control2 = poseFactory.of(51.1161, 16.0237, 0);
     private final Pose halfFlowerHive = poseFactory.of(25.3946, 45.7615, 180);
     private final Pose pathToHive = poseFactory.of(59.6191, 111.4372, 90);
-    private final Pose pathToHiveControl1 = poseFactory.of(9.8816, 141.5, 0);
+    private final Pose pathToHiveControl1 = poseFactory.of(32.4836, 141.5, 0);
     private final Pose lineUpHive2 = poseFactory.of(60.9428, 133.462, 90);
-    private final Pose parkStart = poseFactory.of(60.9428, 133.462, 90);
-    private final Pose park = poseFactory.of(9.4741, 110.6735, 180);
-    private final Pose parkControl1 = poseFactory.of(48.9452, 104.9789, 0);
+    private final Pose parkStart = poseFactory.of(60.5382, 133.838, 90);
+    private final Pose park = poseFactory.of(10.366, 90.5294, 0);
+    private final Pose parkControl1 = poseFactory.of(50.8027, 107.69, 0);
 
     public Path collectPollen1() {
         return Paths.curve(start, collectPollen1Control1, collectPollen1Control2, collectPollen1).linear(start, collectPollen1);
@@ -66,17 +66,17 @@ public class ShootCollectShootPark extends LinearOpMode {
         return Paths.curve(parkStart, parkControl1, park).linear(parkStart, park);
     }
 
-
     // Commands
 
     public Command movePlusIntake() {
         return parallel(
                 follow(follower, collectPollen1()),
-                shoot.timedIntake(1, 5)
+                shoot.timedIntake(1, 5),
+                shoot.timedReverseFlywheel(1, 5)
         );
     }
 
-    public Command reverseIntakeHalf() {
+    public Command moveReverseIntake() {
         return parallel(
                 follow(follower, halfFlowerHive()),
                 shoot.timedReverseIntake(0.1, 0.1)
@@ -89,18 +89,20 @@ public class ShootCollectShootPark extends LinearOpMode {
 
                 movePlusIntake(),
 
-                reverseIntakeHalf(),
+                moveReverseIntake(),
+
 
                 follow(follower, pathToHive()),
 
                 follow(follower, lineUpHive2()),
+
+                shoot.timedReverseIntake(0.2, 0.1),
 
                 shoot.shootForTime(1725, 2),
 
                 follow(follower, park())
         );
     }
-
 
     // Main OpMode
 
@@ -162,9 +164,8 @@ public class ShootCollectShootPark extends LinearOpMode {
             Scheduler.execute();
 
             // Update blackboard
-            OpMode.blackboard.put("Blackboard", lastValidPose);
-
-
+            OpMode.blackboard.put(
+                    "Blackboard", lastValidPose);
             // Telemetry
             telemetry.addData("X", currentPose.x());
             telemetry.addData("Y", currentPose.y());

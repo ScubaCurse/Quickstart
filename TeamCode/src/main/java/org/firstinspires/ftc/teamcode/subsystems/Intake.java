@@ -19,12 +19,12 @@ public class Intake {
         intake.setPower(power);
     }
 
-    public void intake() {
-        setPower(0.5);
+    public void intake(double power) {
+        setPower(power);
     }
 
     public void reverse() {
-        setPower(-0.1);
+        setPower(-0.3);
     }
 
     public void stop() {

@@ -1,22 +1,18 @@
 package org.firstinspires.ftc.teamcode.teleop;
 import com.pedropathing.follower.Follower;
-import com.pedropathing.revhub.localizers.PinpointConfig;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.pedropathing.revhub.localizers.PinpointLocalizer;
 import com.pedropathing.math.Pose;
 import org.firstinspires.ftc.teamcode.util.Calculator;
 import org.firstinspires.ftc.teamcode.subsystems.Flywheel;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
-import org.firstinspires.ftc.teamcode.subsystems.Drivetrain;
 import org.firstinspires.ftc.teamcode.util.HiveShotTableAudience;
 import org.firstinspires.ftc.teamcode.util.HiveShotTableFar;
 import org.firstinspires.ftc.teamcode.util.Shoot;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
 import com.pedropathing.drivetrain.DrivePowers;
 import com.pedropathing.follower.ManualDrive;
-import com.qualcomm.robotcore.hardware.HardwareMap;
 
 @TeleOp(name = "Two Player")
 public class TwoPlayer extends LinearOpMode {
@@ -33,44 +29,53 @@ public class TwoPlayer extends LinearOpMode {
 
         // INITIALIZE HARDWARE
         Follower follower = Constants.create(hardwareMap);
-        Drivetrain drivetrain = new Drivetrain(hardwareMap);
+        //Drivetrain drivetrain = new Drivetrain(hardwareMap);
         Flywheel flywheel = new Flywheel(hardwareMap);
         Intake intake = new Intake(hardwareMap);
         Shoot shoot = new Shoot(flywheel, intake);
-        // localizer = new PinpointLocalizer(hardwareMap, pinp);
         double targetRPM = 0;
 
         // INITIALIZE PINPOINT
-
+        /*
         PinpointLocalizer localizer = new PinpointLocalizer(
                 hardwareMap,
                 Constants.localizerConfig
         );
-
+        */
         telemetry.addLine("TeleOp Initialized");
         telemetry.update();
-
         waitForStart();
 
         if (isStopRequested()) {
             return;
         }
 
+        if (OpMode.blackboard.get("pose") == null) {
+            telemetry.addLine("ERROR: Pose is null, resetting to 0. Did you run your auto yet?");
+        }
+        OpMode.blackboard.putIfAbsent("pose", new Pose(0.0,0.0,0.0));
+
         // Restore Pinpoint starting position ONCE
         Object value = OpMode.blackboard.get("pose");
         Pose pose = (Pose) value;
-        localizer.setPose(pose);
+        follower.setPose(pose);
 
         // MAIN TELEOP LOOP
 
         while (opModeIsActive()) {
 
 
-            localizer.update();
-            double robotX = localizer.pose().x();
-            double robotY = localizer.pose().y();
-            double robotHeading = localizer.pose().heading();
+            follower.update();
+            double robotX = follower.pose().x();
+            double robotY = follower.pose().y();
+            double robotHeading = follower.pose().heading();
 
+            // relocalise button
+            if (gamepad1.dpadLeftWasPressed()) {
+                Pose cornerPose = new Pose(10.5, 10.5, Math.toRadians(90));
+                // On the fly Pose creation, we don't recommend this for Autonomous. Only accepts radians for heading
+                follower.setPose(cornerPose); // overrides our pose
+            }
 
             // HIVE SELECTION
 
@@ -131,14 +136,13 @@ public class TwoPlayer extends LinearOpMode {
 
             drivetrain.mecanum(axial, lateral, yaw);
             */
-            DrivePowers powers = ManualDrive.fieldCentric(
-                    -gamepad1.left_stick_y/2,
-                    -gamepad1.left_stick_x/2,
-                    -gamepad1.right_stick_x,
-                    follower.pose().heading()
+            ManualDrive.driveOrHold(
+                    follower,
+                    -gamepad1.left_stick_y,
+                    -gamepad1.left_stick_x,
+                    -gamepad1.right_stick_x/1.5
             );
-            ManualDrive.driveOrHold(follower, powers);
-            follower.update();
+
 
             // SHOOTER CONTROL
             /*
@@ -154,28 +158,45 @@ public class TwoPlayer extends LinearOpMode {
             }
             */
             if (gamepad2.right_bumper) {
+                // aim towards selected hive
+                /*
+                Pose current = follower.pose();
 
+                double heading = Math.atan2(
+                        hiveY - current.y(),
+                        hiveX - current.x()
+                );
+
+                // Face the target with the back (add 180 degrees)
+                heading += Math.PI;
+
+                follower.hold(new Pose(
+                        current.x(),
+                        current.y(),
+                        heading
+                ));
+                */
                 if (gamepad2.right_trigger > 0) {
 
-                    shoot.shootWithIntake(
-                            Calculator.getTargetVelocity(distance)
-                    );
+                    flywheel.setVelocity(1725);
+                    intake.intake(0.5);
 
                 } else {
 
-                    shoot.shoot(
-                            Calculator.getTargetVelocity(distance)
-                    );
+                    flywheel.setVelocity(1725);
+                    intake.stop();
 
                 }
 
             } else if (gamepad2.left_trigger > 0) {
 
-                shoot.reverseShooter();
+                flywheel.reverse();
+                intake.setPower(1);
 
             } else if (gamepad2.left_bumper) {
 
-                shoot.reverseIntake();
+                flywheel.stop();
+                intake.reverse();
 
             } else {
 
@@ -212,7 +233,7 @@ public class TwoPlayer extends LinearOpMode {
 
 
             telemetry.addLine("--- ROBOT POSITION ---");
-            telemetry.addData("Pos", localizer.pose());
+            telemetry.addData("Pos", follower.pose());
             telemetry.addData("Blackboard saved", pose);
             telemetry.update();
 

@@ -21,27 +21,33 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.Flywheel;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 
-@Autonomous(name = "ShootAndPark", group = "Autonomous")
-public class ShootAndPark extends LinearOpMode {
+@Autonomous(name = "One Tip Change", group = "Autonomous")
+public class OneTipChange extends LinearOpMode {
 
     private Follower follower;
     private Shoot shoot;
 
     private final PoseFactory poseFactory = PoseFactory.degrees();
 
-    private final Pose start = poseFactory.of(57.493, 7.8341, -90);
-    private final Pose path1 = poseFactory.of(11.211, 117.6155, 0);
-    private final Pose path1Control1 = poseFactory.of(10.2535, 30.6464, 0);
+    private final Pose start = poseFactory.of(58.6542, 8.3318, 90);
+    private final Pose path1 = poseFactory.of(58.5706, 20.4, -90);
+    private final Pose point2Start = poseFactory.of(58.5706, 20.4, -90);
+    private final Pose point2 = poseFactory.of(12.5806, 106.1571, 0);
+    private final Pose point2Control1 = poseFactory.of(20.9397, 25.2713, 0);
 
     public Path path1() {
-        return Paths.curve(start, path1Control1, path1)
-                .linear(start, path1);
+        return Paths.line(start, path1).constant(path1);
+    }
+
+    public Path path2() {
+        return Paths.curve(point2Start, point2Control1, point2).linear(point2Start, point2);
     }
 
     public Command autoRoutine() {
         return sequential(
-                shoot.shootForTime(1730, 2),
-                follow(follower, path1())
+                follow(follower, path1()),
+                shoot.shootForTime(1650, 2),
+                follow(follower, path2())
         );
     }
 

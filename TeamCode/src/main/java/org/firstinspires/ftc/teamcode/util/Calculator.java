@@ -37,14 +37,14 @@ public class Calculator {
 
         return velocities[velocities.length - 1];
     }
+
     public static double tpsToRpm(double tps, double cer) {
-
-        double rpm = (tps * 60)/cer;
-        return rpm;
+        // return RPM
+        return (tps * 60) / cer;
     }
-    public static double rpmToTps(double rpm, double cer) {
 
-        double tps = (rpm * cer)/60;
-        return tps;
+    public static double rpmToTps(double rpm, double cer) {
+        // return TPS
+        return (rpm * cer) / 60;
     }
 }

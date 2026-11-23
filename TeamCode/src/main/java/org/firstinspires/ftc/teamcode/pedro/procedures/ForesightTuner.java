@@ -110,31 +110,31 @@ public class ForesightTuner extends Procedure {
         result("brake kV", brake);
 
         code(Language.JAVA,
-        "public static ForesightConfig foresightConfig = new ForesightConfig(\n" +
-                "            c -> {\n" +
-                "                Controller primaryTranslationalForward = Controller.proportional("+forwardTranslationalPrimary+");\n" +
-                "                Controller secondaryTranslationalForward = Controller.proportional("+forwardTranslationalSecondary+");\n" +
-                "                Controller primaryTranslationalLateral = Controller.proportional("+strafeTranslationalPrimary+");\n" +
-                "                Controller secondaryTranslationalLateral = Controller.proportional("+strafeTranslationalSecondary+");\n" +
-                "\n" +
-                "                c.forwardTranslational.set(Controller.piecewise(secondaryTranslationalForward).put(2.5, primaryTranslationalForward));\n" +
-                "                c.strafeTranslational.set(Controller.piecewise(secondaryTranslationalLateral).put(2.5, primaryTranslationalLateral));\n" +
-                "\n" +
-                "                c.coast.set(Controller.proportionalFeedforward("+coast+"));\n" +
-                "                c.brake.set(Controller.proportionalFeedforward("+brake+"));\n" +
-                "\n" +
-                "                c.headingFeedback.set(Controller.proportional("+heading+"));\n" +
-                "                c.headingBrakeCoefficients.set(Vector2D.cartesian("+headingLinear+", "+headingQuadratic+"));\n" +
-                "\n" +
-                "                c.linearBrakeCoefficients.set(Matrix.diag("+forwardLinear+", "+strafeLinear+"));\n" +
-                "                c.quadraticBrakeCoefficients.set(Matrix.diag("+forwardQuadratic+", "+strafeQuadratic+"));\n" +
-                "\n" +
-                "                c.maxAchievableForwardVelocity.set("+forwardVelocity+");\n" +
-                "                c.maxAchievableStrafeVelocity.set("+strafeVelocity+");\n" +
-                "                c.naturalForwardDeceleration.set("+forwardDeceleration+");\n" +
-                "                c.naturalStrafeDeceleration.set("+strafeDeceleration+");\n" +
-                "            }\n" +
-                "    );");
+                "public static ForesightConfig foresightConfig = new ForesightConfig(\n" +
+                        "            c -> {\n" +
+                        "                Controller primaryTranslationalForward = Controller.proportional(" + forwardTranslationalPrimary + ");\n" +
+                        "                Controller secondaryTranslationalForward = Controller.proportional(" + forwardTranslationalSecondary + ");\n" +
+                        "                Controller primaryTranslationalLateral = Controller.proportional(" + strafeTranslationalPrimary + ");\n" +
+                        "                Controller secondaryTranslationalLateral = Controller.proportional(" + strafeTranslationalSecondary + ");\n" +
+                        "\n" +
+                        "                c.forwardTranslational.set(Controller.piecewise(secondaryTranslationalForward).put(2.5, primaryTranslationalForward));\n" +
+                        "                c.strafeTranslational.set(Controller.piecewise(secondaryTranslationalLateral).put(2.5, primaryTranslationalLateral));\n" +
+                        "\n" +
+                        "                c.coast.set(Controller.proportionalFeedforward(" + coast + "));\n" +
+                        "                c.brake.set(Controller.proportionalFeedforward(" + brake + "));\n" +
+                        "\n" +
+                        "                c.headingFeedback.set(Controller.proportional(" + heading + "));\n" +
+                        "                c.headingBrakeCoefficients.set(Vector2D.cartesian(" + headingLinear + ", " + headingQuadratic + "));\n" +
+                        "\n" +
+                        "                c.linearBrakeCoefficients.set(Matrix.diag(" + forwardLinear + ", " + strafeLinear + "));\n" +
+                        "                c.quadraticBrakeCoefficients.set(Matrix.diag(" + forwardQuadratic + ", " + strafeQuadratic + "));\n" +
+                        "\n" +
+                        "                c.maxAchievableForwardVelocity.set(" + forwardVelocity + ");\n" +
+                        "                c.maxAchievableStrafeVelocity.set(" + strafeVelocity + ");\n" +
+                        "                c.naturalForwardDeceleration.set(" + forwardDeceleration + ");\n" +
+                        "                c.naturalStrafeDeceleration.set(" + strafeDeceleration + ");\n" +
+                        "            }\n" +
+                        "    );");
     }
 
     /**
@@ -188,7 +188,7 @@ class ForwardVelocity extends TuningOpMode<Double> {
         localizer.setPose(Pose.zero());
         localizer.update();
 
-        DrivePowers power = new DrivePowers(1,0,0);
+        DrivePowers power = new DrivePowers(1, 0, 0);
 
         for (int i = 0; i < RECORD_NUMBER; i++) {
             velocities.add(0.0);
@@ -215,7 +215,7 @@ class ForwardVelocity extends TuningOpMode<Double> {
         drivetrain.stop();
         double average = 0;
         for (double velocity : velocities) {
-                average += velocity;
+            average += velocity;
         }
         average /= velocities.size();
         return average;
@@ -246,7 +246,7 @@ class StrafeVelocity extends TuningOpMode<Double> {
         localizer.setPose(Pose.zero());
         localizer.update();
 
-        DrivePowers power = new DrivePowers(0,1,0);
+        DrivePowers power = new DrivePowers(0, 1, 0);
 
         for (int i = 0; i < RECORD_NUMBER; i++) {
             velocities.add(0.0);
@@ -577,7 +577,8 @@ class HeadingBraking extends TuningOpMode<List<Double>> {
                     }
                     break;
                 }
-                case DONE: {}
+                case DONE: {
+                }
             }
         }
 
@@ -597,7 +598,7 @@ class HeadingBraking extends TuningOpMode<List<Double>> {
             double min,
             double bias
     ) {
-        if (count < 2) return new double[]{  max};
+        if (count < 2) return new double[]{max};
 
         double[] values = new double[count];
 
@@ -728,7 +729,7 @@ class HeadingTuner extends TuningOpMode<Double> {
             throw new IllegalArgumentException("Failed calibration: only " + x.size()
                     + " samples while the robot sped up.");
         }
-        this.tau = -1.0/linReg[1];
+        this.tau = -1.0 / linReg[1];
     }
 }
 
@@ -748,9 +749,13 @@ class ForwardBraking extends TuningOpMode<List<Double>> {
     public double brakingPower = 0.001;
     public double distance;
     public double IDLE_SECONDS = 1;
-    /** Stops the robot if it gets this many inches past the test's ends. */
+    /**
+     * Stops the robot if it gets this many inches past the test's ends.
+     */
     public double OVERRUN = 24;
-    /** Stops the robot if it drifts this many inches across the test's direction. */
+    /**
+     * Stops the robot if it drifts this many inches across the test's direction.
+     */
     public double DRIFT = 48;
 
     private final ElapsedTime timer = new ElapsedTime();
@@ -791,7 +796,7 @@ class ForwardBraking extends TuningOpMode<List<Double>> {
         localizer.update();
         timer.reset();
 
-        drivetrain.drive(new DrivePowers(maxPower,0,0), false);
+        drivetrain.drive(new DrivePowers(maxPower, 0, 0), false);
 
         while (state != State.DONE && !isStopRequested()) {
             localizer.update();
@@ -834,7 +839,8 @@ class ForwardBraking extends TuningOpMode<List<Double>> {
                     if (timer.seconds() > IDLE_SECONDS) state = State.DRIVE;
                     break;
                 }
-                case DONE: {}
+                case DONE: {
+                }
             }
         }
 
@@ -919,16 +925,20 @@ class StrafeBraking extends TuningOpMode<List<Double>> {
 
     private double[] POWERS;
     public double MAX_BRAKE_TIME = 7.0;
-    public  int trials = 5;
+    public int trials = 5;
     public double maxPower = 1;
     public double minPower = 0.3;
     public double bias = 1.5;
     public double brakingPower = 0.001;
     public double distance;
     public double IDLE_SECONDS = 1;
-    /** Stops the robot if it gets this many inches past the test's ends. */
+    /**
+     * Stops the robot if it gets this many inches past the test's ends.
+     */
     public double OVERRUN = 24;
-    /** Stops the robot if it drifts this many inches across the test's direction. */
+    /**
+     * Stops the robot if it drifts this many inches across the test's direction.
+     */
     public double DRIFT = 48;
 
     private final ElapsedTime timer = new ElapsedTime();
@@ -969,7 +979,7 @@ class StrafeBraking extends TuningOpMode<List<Double>> {
         localizer.update();
         timer.reset();
 
-        drivetrain.drive(new DrivePowers(0,maxPower,0), false);
+        drivetrain.drive(new DrivePowers(0, maxPower, 0), false);
 
         while (state != State.DONE && !isStopRequested()) {
             localizer.update();
@@ -1013,7 +1023,8 @@ class StrafeBraking extends TuningOpMode<List<Double>> {
                     if (timer.seconds() > IDLE_SECONDS) state = State.DRIVE;
                     break;
                 }
-                case DONE: {}
+                case DONE: {
+                }
             }
         }
 
@@ -1210,7 +1221,7 @@ class ForwardTranslational extends TuningOpMode<List<Double>> {
             throw new IllegalArgumentException("Failed calibration: only " + x.size()
                     + " samples while the robot sped up.");
         }
-        this.tau = -1.0/linReg[1];
+        this.tau = -1.0 / linReg[1];
     }
 }
 
@@ -1333,7 +1344,7 @@ class StrafeTranslational extends TuningOpMode<List<Double>> {
             throw new IllegalArgumentException("Failed calibration: only " + x.size()
                     + " samples while the robot sped up.");
         }
-        this.tau = -1.0/linReg[1];
+        this.tau = -1.0 / linReg[1];
     }
 }
 

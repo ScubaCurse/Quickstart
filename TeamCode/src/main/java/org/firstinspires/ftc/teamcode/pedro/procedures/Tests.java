@@ -41,6 +41,7 @@ public class Tests extends Procedure {
         @DisplayName("Pose Test")
         POSE
     }
+
     Function<HardwareMap, Drivetrain> drivetrainFunction;
     Function<HardwareMap, Localizer> localizerFunction;
     Supplier<Algorithm> algorithmSupplier;
@@ -170,8 +171,8 @@ class TestsLine extends TuningOpMode<Boolean> {
 
         boolean forward = true;
 
-        Path path1 = line(Pose.zero(), new Pose(distance,0, 0)).constant(0);
-        Path path2 = line(new Pose(distance,0, 0), Pose.zero()).constant(0);
+        Path path1 = line(Pose.zero(), new Pose(distance, 0, 0)).constant(0);
+        Path path2 = line(new Pose(distance, 0, 0), Pose.zero()).constant(0);
 
         Thread.sleep(1000);
         waitForStart();
@@ -211,8 +212,8 @@ class TestsCurve extends TuningOpMode<Boolean> {
 
         boolean forward = true;
 
-        Path path1 = curve(Pose.zero(), new Pose(distance + 0,0), new Pose(distance,distance)).tangent();
-        Path path2 = curve(new Pose(distance,distance), new Pose(distance,0), Pose.zero()).tangent();
+        Path path1 = curve(Pose.zero(), new Pose(distance + 0, 0), new Pose(distance, distance)).tangent();
+        Path path2 = curve(new Pose(distance, distance), new Pose(distance, 0), Pose.zero()).tangent();
 
         Thread.sleep(1000);
         waitForStart();
@@ -252,8 +253,8 @@ class TestsInterpolation extends TuningOpMode<Boolean> {
 
         boolean forward = true;
 
-        Path path1 = curve(Pose.zero(), new Pose(distance + 0,0), new Pose(distance,distance)).heading((curve, t) -> Math.PI);
-        Path path2 = curve(new Pose(distance,distance), new Pose(distance,0), Pose.zero()).heading(Interpolator.piecewise().until(0.5, Interpolator.tangent).until(1.0, Interpolator.constant(0)));
+        Path path1 = curve(Pose.zero(), new Pose(distance + 0, 0), new Pose(distance, distance)).heading((curve, t) -> Math.PI);
+        Path path2 = curve(new Pose(distance, distance), new Pose(distance, 0), Pose.zero()).heading(Interpolator.piecewise().until(0.5, Interpolator.tangent).until(1.0, Interpolator.constant(0)));
 
         Thread.sleep(1000);
         waitForStart();

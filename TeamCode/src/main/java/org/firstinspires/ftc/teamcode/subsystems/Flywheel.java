@@ -31,10 +31,6 @@ public class Flywheel {
         setVelocity(0);
     }
 
-    public void reverse() {
-        setVelocity(-1000);
-    }
-
     public double getLeftVelocity() {
         return shooterLeft.getVelocity();
     }

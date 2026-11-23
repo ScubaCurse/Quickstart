@@ -7,6 +7,7 @@ import com.pedropathing.tuning.autotune.Inputs;
 import com.pedropathing.tuning.autotune.Procedure;
 import com.pedropathing.tuning.autotune.TuningOpMode;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
+
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 import java.util.*;
@@ -17,6 +18,7 @@ public class PinpointTuner extends Procedure {
         FOUR_BAR,
         CUSTOM
     }
+
     public PinpointTuner() {
         super("Pinpoint Tuner", "A procedure for tuning the Pinpoint localizer.");
     }
@@ -56,7 +58,7 @@ public class PinpointTuner extends Procedure {
         result("xPodOffset", offsets.get(0));
         result("yPodOffset", offsets.get(1));
 
-        code(Language.JAVA,"public static PinpointConfig localizerConfig = new PinpointConfig(c -> {\n" +
+        code(Language.JAVA, "public static PinpointConfig localizerConfig = new PinpointConfig(c -> {\n" +
                 "    c.name.set(\"" + pinpointName.get() + "\");\n" +
                 (customPodScalar.isPresent() ? "    c.ticksPerUnit.set(OptionalDouble.of(" + customPodScalar.getAsDouble() + "));\n" : "    c.podType.set(" + (podType.get() == PodType.SWING_ARM ? "GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_SWINGARM_POD" : "GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD") + ");\n") +
                 "    c.xPodOffset.set(" + offsets.get(0) + ");\n" +
@@ -210,7 +212,7 @@ class PinpointStrafeDirection extends TuningOpMode<Boolean> {
 class PinpointOffsets extends TuningOpMode<List<Double>> {
     String name;
     PinpointTuner.PodType podType;
-    OptionalDouble customPodScalar =  OptionalDouble.empty();
+    OptionalDouble customPodScalar = OptionalDouble.empty();
     boolean forwardPodReversed, strafePodReversed;
     private Pose previous = Pose.zero();
 
@@ -272,7 +274,7 @@ class PinpointOffsets extends TuningOpMode<List<Double>> {
         }
 
         if (localizer.pose().x() != Pose.zero().x() || localizer.pose().y() != Pose.zero().y()) {
-            previous =  localizer.pose();
+            previous = localizer.pose();
         }
 
         return List.of(((-previous.y()) / 2.0), ((-previous.x()) / 2.0));

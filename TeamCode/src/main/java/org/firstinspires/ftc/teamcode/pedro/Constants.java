@@ -64,6 +64,7 @@ public class Constants {
                 c.naturalStrafeDeceleration.set(65.72219463530226);
             }
     );
+
     public static Follower create(HardwareMap h) {
         return new Follower(
                 new PinpointLocalizer(h, localizerConfig),

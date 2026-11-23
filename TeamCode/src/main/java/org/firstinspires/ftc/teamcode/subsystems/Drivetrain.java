@@ -4,7 +4,9 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 public class Drivetrain {
-
+    // This is the previous drivetrain class with functions that previously controlled the robot.
+    // It has been superseded by PedroPathing's built-in drivetrain functions in teleop.
+    // This class has been retained for reference.
     private final DcMotor FL;
     private final DcMotor RL;
     private final DcMotor FR;
@@ -23,6 +25,13 @@ public class Drivetrain {
         RR.setDirection(DcMotor.Direction.REVERSE);
     }
 
+    /* Usage:
+    double axial = -(gamepad1.left_stick_y / speedMode);
+    double lateral = gamepad1.right_stick_x / 2;
+    double yaw = gamepad1.left_stick_x / speedMode;
+
+    drivetrain.mecanum(axial, lateral, yaw);
+    */
     public void mecanum(double axial, double lateral, double yaw) {
 
         double frontLeftPower;

@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
 import com.pedropathing.drivetrain.DrivePowers;
 import com.pedropathing.follower.ManualDrive;
 
-@TeleOp(name = "Two Player")
+@TeleOp(name = "Two Play")
 public class TwoPlayer extends LinearOpMode {
     // Gamepad 1 = Driver
     // Gamepad 2 = Intake / Shooter
@@ -27,7 +27,7 @@ public class TwoPlayer extends LinearOpMode {
         Follower follower = Constants.create(hardwareMap);
         Flywheel flywheel = new Flywheel(hardwareMap);
         Intake intake = new Intake(hardwareMap);
-
+        boolean drivingHold = true;
         telemetry.addLine("TeleOp Initialized");
         telemetry.update();
 
@@ -82,18 +82,34 @@ public class TwoPlayer extends LinearOpMode {
                             Math.pow(hiveX - robotX, 2)
             );
 
-            // Drivetrain
-            ManualDrive.driveOrHold(
-                    follower,
-                    -gamepad1.left_stick_y,
-                    -gamepad1.left_stick_x,
-                    -gamepad1.right_stick_x / 1.5
-            );
+            if (gamepad2.x) {
+                drivingHold = false;
+
+            } else if (gamepad2.y) {
+                drivingHold = true;
+            }
+
+            if (drivingHold) {
+                // Drivetrain
+                ManualDrive.driveOrHold(
+                        follower,
+                        -gamepad1.left_stick_y,
+                        -gamepad1.left_stick_x,
+                        -gamepad1.right_stick_x / 1.5
+                );
+            } else {
+                follower.manual(
+                        -gamepad1.left_stick_y,
+                        -gamepad1.left_stick_x,
+                        -gamepad1.right_stick_x/1.5
+                );
+            }
+
 
             // shooting
-            if (gamepad2.right_bumper) {
+            if (gamepad1.right_bumper) {
 
-                if (gamepad2.right_trigger > 0) {
+                if (gamepad1.right_trigger > 0) {
 
                     flywheel.setVelocity(1725);
                     intake.setPower(0.5);
@@ -105,12 +121,12 @@ public class TwoPlayer extends LinearOpMode {
 
                 }
 
-            } else if (gamepad2.left_trigger > 0) {
+            } else if (gamepad1.left_trigger > 0) {
 
                 flywheel.setVelocity(-500);
                 intake.setPower(1);
 
-            } else if (gamepad2.left_bumper) {
+            } else if (gamepad1.left_bumper) {
 
                 flywheel.stop();
                 intake.setPower(-0.3);

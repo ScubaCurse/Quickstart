@@ -61,7 +61,6 @@ public class ShootAndPark extends LinearOpMode {
             if (follower.pose().x() != 0 && follower.pose().y() != 0 && follower.pose().heading() != 0) {
                 blackboard.put("pose", follower.pose());
             }
-
             telemetry.addData("x", follower.pose().x());
             telemetry.addData("y", follower.pose().y());
             telemetry.addData("heading", follower.pose().heading());

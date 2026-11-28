@@ -5,7 +5,6 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.follower.ManualDrive;
 import com.pedropathing.math.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.pedro.Constants;
@@ -79,10 +78,10 @@ public class Demo extends LinearOpMode {
             Pose topRight  = new Pose(62.2, 133.2, 0.0);
             */
 
-            if (gamepad2.x) {
+            if (gamepad1.x) {
                 drivingHold = false;
 
-            } else if (gamepad2.y) {
+            } else if (gamepad1.y) {
                 drivingHold = true;
             }
 
@@ -118,6 +117,8 @@ public class Demo extends LinearOpMode {
 
             if (drivingHold) {
                 ManualDrive.driveOrHold(follower, powers);
+            } else {
+                follower.manual(powers);
             }
 
             follower.update();

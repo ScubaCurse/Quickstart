@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
 import com.pedropathing.drivetrain.DrivePowers;
 import com.pedropathing.follower.ManualDrive;
 
-@TeleOp(name = "Two Play")
+@TeleOp(name = "Two Player")
 public class TwoPlayer extends LinearOpMode {
     // Gamepad 1 = Driver
     // Gamepad 2 = Intake / Shooter
@@ -82,31 +82,59 @@ public class TwoPlayer extends LinearOpMode {
                             Math.pow(hiveX - robotX, 2)
             );
 
-            if (gamepad2.x) {
+            if (gamepad1.x) {
                 drivingHold = false;
 
-            } else if (gamepad2.y) {
+            } else if (gamepad1.y) {
                 drivingHold = true;
             }
 
+            DrivePowers powers = ManualDrive.fieldCentric(
+                    -gamepad1.left_stick_y,
+                    -gamepad1.left_stick_x,
+                    -gamepad1.right_stick_x / 1.5,
+                    follower.pose().heading()
+            );
+
             if (drivingHold) {
-                // Drivetrain
-                ManualDrive.driveOrHold(
-                        follower,
-                        -gamepad1.left_stick_y,
-                        -gamepad1.left_stick_x,
-                        -gamepad1.right_stick_x / 1.5
-                );
+                ManualDrive.driveOrHold(follower, powers);
             } else {
-                follower.manual(
-                        -gamepad1.left_stick_y,
-                        -gamepad1.left_stick_x,
-                        -gamepad1.right_stick_x/1.5
-                );
+                follower.manual(powers);
             }
+
+            follower.update();
 
 
             // shooting
+            if (gamepad1.right_bumper) {
+
+                if (gamepad1.right_trigger > 0) {
+
+                    flywheel.setVelocity(1725);
+                    intake.setPower(0.5);
+
+                } else {
+
+                    flywheel.setVelocity(1725);
+                    intake.stop();
+
+                }
+
+            } else if (gamepad1.left_trigger > 0) {
+
+                flywheel.setVelocity(-500);
+                intake.setPower(1);
+
+            } else if (gamepad1.left_bumper) {
+
+                flywheel.stop();
+                intake.setPower(-0.3);
+
+            } else {
+
+                flywheel.stop();
+                intake.stop();
+            }// shooting
             if (gamepad1.right_bumper) {
 
                 if (gamepad1.right_trigger > 0) {
